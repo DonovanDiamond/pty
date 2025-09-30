@@ -4,11 +4,10 @@
 package pty
 
 import (
-	"os"
 	"testing"
 )
 
-func getNonBlockingFile(t *testing.T, file *os.File, path string) *os.File {
+func getNonBlockingFile(t *testing.T, ptmx Pty, path string) Pty {
 	t.Helper()
-	return file
+	return ptmx
 }
