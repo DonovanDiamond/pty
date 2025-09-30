@@ -3,7 +3,7 @@
 
 package pty
 
-// from <sys/ioccom.h>
+// from <sys/ioccom.h>.
 const (
 	_IOC_VOID    uintptr = 0x20000000
 	_IOC_OUT     uintptr = 0x40000000
