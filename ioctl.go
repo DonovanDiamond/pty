@@ -1,5 +1,4 @@
-//go:build !windows && go1.12
-// +build !windows,go1.12
+//go:build !windows
 
 package pty
 
