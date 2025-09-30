@@ -36,6 +36,7 @@ func open() (pty, tty *os.File, err error) {
 		return nil, nil, err
 	}
 
+	//nolint:gosec // G304: sname is a system-generated PTY device path from TIOCPTYGNAME, not user input.
 	t, err := os.OpenFile(sname, os.O_RDWR|syscall.O_NOCTTY, 0)
 	if err != nil {
 		return nil, nil, err
@@ -46,6 +47,7 @@ func open() (pty, tty *os.File, err error) {
 func ptsname(f *os.File) (string, error) {
 	n := make([]byte, _IOC_PARM_LEN(syscall.TIOCPTYGNAME))
 
+	//nolint:gosec // G103: unsafe.Pointer required for ioctl syscall.
 	err := ioctl(f, syscall.TIOCPTYGNAME, uintptr(unsafe.Pointer(&n[0])))
 	if err != nil {
 		return "", err
