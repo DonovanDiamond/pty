@@ -164,7 +164,7 @@ func procCreatePseudoConsole(hInput windows.Handle, hOutput windows.Handle, dwFl
 		return err
 	}
 
-	// TODO: Check if it is expected to ignore `err` here.
+	//nolint:errcheck // Windows syscall: actual error status is in r0 HRESULT, not err.
 	r0, _, _ := createPseudoConsole.Call(
 		(windowsCoord{X: 80, Y: 30}).Pack(),    // Size: default 80x30 window.
 		uintptr(hInput),                        // Console input.

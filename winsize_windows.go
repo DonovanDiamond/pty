@@ -43,8 +43,7 @@ func Setsize(t FdHolder, ws *Winsize) error {
 		return err
 	}
 
-	// TODO: As we removed the use of `.Fd()` on Unix (https://github.com/creack/pty/pull/168), we need to check if we should do the same here.
-	// TODO: Check if it is expected to ignore `err` here.
+	//nolint:errcheck // Windows syscall: actual error status is in r0 HRESULT, not err.
 	r0, _, _ := resizePseudoConsole.Call(
 		t.Fd(),
 		(windowsCoord{X: int16(ws.Cols), Y: int16(ws.Rows)}).Pack(),
@@ -63,13 +62,29 @@ func Setsize(t FdHolder, ws *Winsize) error {
 
 // GetsizeFull returns the full terminal size description.
 func GetsizeFull(t FdHolder) (size *Winsize, err error) {
+	// GetConsoleScreenBufferInfo requires a console buffer handle, not a pseudo console handle.
+	// For WindowsPty/WindowsTty, we need to get the actual console buffer handle.
+	var consoleHandle uintptr
+
+	switch v := t.(type) {
+	case *WindowsPty:
+		// Use the write pipe's file descriptor as it's connected to the console output
+		consoleHandle = v.w.Fd()
+	case *WindowsTty:
+		// Use the write pipe's file descriptor as it's connected to the console output
+		consoleHandle = v.w.Fd()
+	default:
+		// Fallback to Fd() for other types
+		consoleHandle = t.Fd()
+	}
+
 	if err := getConsoleScreenBufferInfo.Find(); err != nil {
 		return nil, err
 	}
 
 	var info windowsConsoleScreenBufferInfo
-	// TODO: Check if it is expected to ignore `err` here.
-	r0, _, _ := getConsoleScreenBufferInfo.Call(t.Fd(), uintptr(unsafe.Pointer(&info)))
+	//nolint:errcheck // Windows syscall: actual error status is in r0 HRESULT, not err.
+	r0, _, _ := getConsoleScreenBufferInfo.Call(consoleHandle, uintptr(unsafe.Pointer(&info)))
 	if int32(r0) < 0 {
 		if r0&0x1fff0000 == 0x00070000 {
 			r0 &= 0xffff
