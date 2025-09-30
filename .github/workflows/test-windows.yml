@@ -1,0 +1,44 @@
+---
+name: Test Windows
+
+"on":
+  push:
+    branches:
+      - master
+      - windows-support
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: "Test go ${{ matrix.go_version }} on Windows"
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        go_version:
+          - stable
+          - oldstable
+
+    steps:
+      - name: Set up Go ${{ matrix.go_version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go_version }}
+          check-latest: true
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v
+
+      - name: Run tests
+        run: go test -v -timeout=5m
+
+      - name: Run tests (count=10)
+        run: go test -count=10 -timeout=10m
