@@ -1,4 +1,4 @@
-module github.com/creack/pty
+module github.com/DonovanDiamond/pty
 
 go 1.24.0
 
